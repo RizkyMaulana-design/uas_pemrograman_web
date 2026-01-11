@@ -1,0 +1,38 @@
+uas_project/
+│
+├── assets/                          # Folder aset statis
+│   ├── css/
+│   │   └── style.css                # (Opsional) Custom CSS tambahan
+│   └── images/                      # Penyimpanan file gambar upload
+│       ├── products/                # Foto produk (hasil upload admin)
+│       └── users/                   # Foto profil (hasil upload user)
+│
+├── config/                          # Konfigurasi Database
+│   └── Database.php                 # Class koneksi PDO (Host 127.0.0.1, Port 3307)
+│
+├── controllers/                     # Logika Bisnis & Backend
+│   ├── AuthController.php           # Menangani Login & Register
+│   └── TransController.php          # Menangani Checkout & Transaksi
+│
+├── views/                           # Tampilan Antarmuka (Frontend)
+│   ├── admin/                       # Halaman khusus Admin
+│   │   ├── dashboard.php            # Halaman utama Admin (Clock & Stats)
+│   │   ├── members.php              # Daftar anggota terdaftar
+│   │   ├── products.php             # CRUD Barang (Modal & Table)
+│   │   └── report.php               # Laporan Keuangan (Digital Rain)
+│   │
+│   ├── layout/                      # Komponen berulang
+│   │   └── navbar.php               # Navigasi atas (Menu)
+│   │
+│   ├── user/                        # Halaman khusus User
+│   │   ├── cart.php                 # Keranjang Belanja & Checkout
+│   │   ├── catalog.php              # Etalase Produk & Pencarian
+│   │   └── profile.php              # Edit Profil & Ganti Foto
+│   │
+│   ├── login.php                    # Form Login
+│   ├── register.php                 # Form Registrasi
+│   └── splash.php                   # Layar Loading (Hyperspace Animation)
+│
+├── index.php                        # Main Entry Point (Routing System)
+├── README.md                        # Dokumentasi Proyek
+└── database.sql                     # (Opsional) File backup database
