@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root {
+    --gold: #d4af37;
+    --gold-light: #f7df85;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* BACKGROUND 4D ANIMASI BERGERAK */
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #000000);
+    background-size: 400% 400%;
+    animation: deepOcean 15s ease infinite;
+    background-attachment: fixed; /* Tambahan agar background tetap saat scroll */
+}
+
+@keyframes deepOcean {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ANIMASI FADE IN UNTUK HALAMAN */
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* KARTU KACA (GLASSMORPHISM) MEWAH */
+.glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    padding: 30px; /* Diperkecil sedikit agar proporsional */
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-card:hover {
+    transform: translateY(-10px);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+/* TOMBOL EMAS (LUXURY GOLD) */
+.btn-luxury {
+    background: linear-gradient(45deg, var(--gold), var(--gold-light));
+    border: none;
+    color: #000 !important; /* Paksa warna hitam agar teks terlihat jelas */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 50px;
+    padding: 12px 30px;
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+    transition: 0.3s;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-luxury:hover {
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.6);
+    transform: scale(1.05) translateY(-2px);
+    background: linear-gradient(45deg, var(--gold-light), var(--gold));
+}
+
+/* TABEL MEWAH */
+.table-luxury {
+    color: white;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* Jarak antar baris lebih elegan */
+    width: 100%;
+}
+
+.table-luxury thead th {
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--gold-light);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border: none;
+    padding: 15px;
+}
+
+.table-luxury tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    transition: 0.3s;
+    border-radius: 15px;
+}
+
+.table-luxury tbody tr:hover {
+    background: rgba(212, 175, 55, 0.08);
+    transform: scale(1.01);
+}
+
+.table-luxury td {
+    padding: 20px 15px;
+    border: none;
+}
+
+/* Tambahan Efek Teks Emas (Untuk Judul) */
+.text-gold {
+    background: linear-gradient(45deg, var(--gold), var(--gold-light));
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+}
+
+/* Responsivitas untuk layar HP */
+@media (max-width: 768px) {
+    .glass-card {
+        padding: 20px;
+    }
+    .table-luxury {
+        font-size: 0.85rem;
+    }
+}
