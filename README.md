@@ -131,13 +131,117 @@ switch ($page) {
 
 Sistem keamanan untuk memvalidasi identitas pengguna (`controllers/AuthController.php`).
 
-![Screenshot Login](docs/foto_login.png)
-*(Gambar: Halaman Login)*
 
-### 🧠 Bedah Logika:
-* **Password Hashing:** Password user tidak disimpan mentah. Saat Register, password dienkripsi menggunakan `password_hash()` (Algoritma Bcrypt).
-* **Login Verification:** Saat Login, sistem mencocokkan input user dengan hash di database menggunakan `password_verify()`.
-* **Role Management:** Sistem menyimpan status `role` ('admin' atau 'user') ke dalam Session PHP. Ini digunakan untuk membedakan fitur yang bisa diakses.
+<img width="2048" height="3836" alt="carbon (3)" src="https://github.com/user-attachments/assets/45808fb8-aec7-4bdc-aea9-2ef533a949e3" />
+*(Gambar: Code`controllers/AuthController.php`)
+
+*<img width="957" height="468" alt="login" src="https://github.com/user-attachments/assets/d93f0857-e372-4458-b4ce-dc3e4431370a" />
+*(Gambar: Halaman Login)
+
+<img width="960" height="475" alt="register" src="https://github.com/user-attachments/assets/9151c89a-7125-42bc-866f-26995ab29986" />
+*(Gambar: Halaman Register)
+
+Berikut adalah penjelasan teknis dan mendalam untuk file **`controllers/AuthController.php`** sesuai dengan gambar `carbon (3).jpg` yang Anda unggah.
+
+
+### 📄 Analisis Teknis: `controllers/AuthController.php` (Authentication Logic)
+
+File ini bertindak sebagai **Controller** yang menangani seluruh logika bisnis terkait otentikasi pengguna. File ini menjembatani input dari *View* (Form Login/Register) ke *Database*.
+
+#### 1. Koneksi Database & Constructor
+
+```php
+public function __construct()
+{
+    try {
+        $db = new Database();
+        $this->conn = $db->getConnection();
+    } catch (Exception $e) { ... }
+}
+
+```
+
+* **Dependency Initialization:** Saat class `AuthController` dipanggil, fungsi `__construct` otomatis berjalan pertama kali untuk membuka koneksi ke database.
+* **Error Containment:** Menggunakan blok `try-catch` agar jika database mati, program tidak *crash* total, melainkan menampilkan pesan error yang terkendali.
+
+#### 2. Logika Registrasi (Secure Registration)
+
+Fungsi `register()` menangani pendaftaran pengguna baru dengan standar keamanan tinggi.
+
+* **Password Hashing (Enkripsi Satu Arah):**
+```php
+$hash = password_hash($password, PASSWORD_DEFAULT);
+
+```
+
+
+Sistem **TIDAK** menyimpan password asli (*plain text*) pengguna. Password diubah menjadi string acak menggunakan algoritma **Bcrypt** (`PASSWORD_DEFAULT`). Ini menjamin bahwa admin database sekalipun tidak bisa melihat password pengguna.
+* **Prepared Statements (Anti SQL Injection):**
+```php
+$stmt = $this->conn->prepare("INSERT INTO users ... VALUES (:f, :u, :p, ...)");
+$stmt->execute([':f' => $fullname, ...]);
+
+```
+
+
+Query SQL menggunakan *placeholders* (`:f`, `:u`) untuk memisahkan perintah SQL dari data input. Ini menutup celah keamanan dari serangan *SQL Injection*.
+* **Duplicate Handling (Error Code 23000):**
+```php
+if ($e->getCode() == 23000) { ...header('Location: ...error=exists'); }
+
+```
+
+
+Sistem menangkap kode error SQL spesifik `23000` (Integrity Constraint Violation). Ini terjadi jika user mencoba mendaftar dengan *username* yang sudah ada. Sistem akan mengembalikan user ke halaman register dengan pesan "Username sudah terpakai".
+
+#### 3. Logika Login (Verification & Session)
+
+Fungsi `login()` bertugas memvalidasi kredensial pengguna.
+
+* **Password Verification:**
+```php
+if ($user && password_verify($password, $user['password'])) { ... }
+
+```
+
+
+Menggunakan fungsi `password_verify()` untuk mencocokkan password yang diinput saat login dengan *hash* terenkripsi yang ada di database.
+* **Session Management (State Persistence):**
+```php
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['role'] = $user['role'];
+// ...
+
+```
+
+
+Jika login sukses, data penting (`id`, `role`, `fullname`, `photo`) disimpan ke dalam **SESSION**. Data inilah yang nantinya digunakan oleh `index.php` untuk menentukan apakah user boleh masuk ke Dashboard Admin atau Katalog User.
+* **Splash Screen Redirection:**
+Setelah sesi dibuat, pengguna tidak langsung masuk dashboard, melainkan diarahkan ke `views/splash.php` untuk menampilkan efek animasi *loading* "Hyperspace".
+
+#### 4. Request Handler & Direct Access Protection
+
+Bagian terbawah file berfungsi sebagai **Dispatcher** untuk menangani permintaan HTTP.
+
+* **POST Method Check:**
+```php
+if ($_SERVER['REQUEST_METHOD'] == 'POST') { ... }
+
+```
+
+
+Memastikan logika hanya berjalan jika data dikirim melalui metode POST (aman).
+* **Direct Access Block (Security):**
+```php
+} else {
+    echo "<h1>AKSES DITOLAK</h1>";
+    // ...
+}
+
+```
+
+
+Jika ada pengguna iseng yang mencoba membuka file ini langsung dari browser (lewat URL `controllers/AuthController.php` tanpa form), sistem akan memblokir akses dan menampilkan pesan peringatan merah "AKSES DITOLAK".
 
 ---
 
