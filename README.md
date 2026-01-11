@@ -43,25 +43,87 @@
 
 ---
 
-## 1. Core Architecture
+## . Core Architecture
 
 Fondasi aplikasi yang menangani koneksi data dan pengaturan alur halaman (*Routing*).
 
-### A. Central Routing (`index.php`)
-File ini berfungsi sebagai **Front Controller**. Semua request masuk melalui satu pintu untuk keamanan dan keteraturan URL.
+### A.  Analisis Teknis: `index.php` (The Routing System)
 
-* **URL Sanitization:** Menggunakan `filter_var(..., FILTER_SANITIZE_URL)` untuk membersihkan karakter ilegal dari URL.
-* **Middleware Logic:**
-    * Mencegah user yang belum login masuk ke halaman admin.
-    * Mencegah user yang sudah login kembali ke halaman login (Redirect Loop Protection).
-* **Dispatcher:** Menggunakan `switch-case` untuk memanggil file View yang tepat (`catalog`, `cart`, `admin_dashboard`) berdasarkan parameter URL.
+<img width="1572" height="3788" alt="code index" src="https://github.com/user-attachments/assets/f6ee75d5-d5b7-49c6-95d4-290e0eb9788b" />
 
-### B. Database Connection (`config/Database.php`)
-Menggunakan **PDO (PHP Data Objects)** dengan konfigurasi khusus.
 
-* **Custom Port & Host:** Dikonfigurasi ke **Port 3307** dan Host **127.0.0.1** untuk stabilitas maksimal di server lokal (XAMPP).
-* **OOP Encapsulation:** Kredensial database dibungkus dalam properti `private` agar tidak bisa diakses dari luar class.
-* **Exception Handling:** Koneksi dibungkus dalam blok `try-catch` untuk menangani error database tanpa mematikan aplikasi secara kasar.
+File ini berfungsi sebagai pintu gerbang tunggal (*Single Entry Point*). Artinya, semua permintaan dari pengguna—baik itu membuka dashboard, melihat produk, atau logout—harus melewati file ini terlebih dahulu.
+
+#### 1. Inisialisasi & Konfigurasi Dasar
+
+```php
+session_start();
+define('BASE_URL', 'http://localhost/uas_project');
+require_once 'config/Database.php';
+
+```
+
+* **`session_start()`**: Perintah ini wajib diletakkan di baris paling atas. Fungsinya untuk memulai sesi server, memungkinkan aplikasi "mengingat" siapa yang sedang login (menyimpan data seperti `user_id` atau `role` saat berpindah halaman).
+* **`define('BASE_URL', ...)`**: Mendefinisikan konstanta global yang berisi alamat dasar website. Ini sangat penting agar semua link (CSS, gambar, href) bersifat absolut dan tidak *error* (broken link) saat aplikasi diakses dari sub-folder yang berbeda.
+* **`require_once`**: Memanggil file konfigurasi database agar koneksi tersedia untuk seluruh aplikasi.
+
+#### 2. URL Parser (Penerjemah Alamat)
+
+```php
+$url = isset($_GET['url']) ? $_GET['url'] : 'login';
+$url = rtrim($url, '/');
+$url = filter_var($url, FILTER_SANITIZE_URL);
+$params = explode('/', $url);
+$page = $params[0];
+
+```
+
+* Bagian ini bertugas mengambil parameter dari *Address Bar* browser.
+* **`rtrim($url, '/')`**: Menghapus tanda garis miring di akhir URL agar konsisten.
+* **`FILTER_SANITIZE_URL`**: Fitur keamanan untuk membersihkan URL dari karakter-karakter aneh yang berpotensi membahayakan sistem (*Security Sanitization*).
+* **`explode('/', $url)`**: Memecah URL menjadi potongan-potongan array. Contoh: jika URL adalah `admin_products/edit/5`, sistem akan tahu bahwa halaman yang dituju adalah `admin_products`.
+
+#### 3. Middleware Security (Satpam Digital)
+
+Kode ini memiliki dua lapisan keamanan (Logic) sebelum mengizinkan user masuk:
+
+* **Logic 1: Guest Guard (Cegah Login Ulang)**
+```php
+if (isset($_SESSION['user_id']) && ($page == 'login' || $page == 'register')) { ... }
+
+```
+
+
+Jika pengguna **sudah login** tetapi mencoba membuka halaman Login atau Register, sistem akan langsung menendang mereka kembali ke Dashboard sesuai peran mereka (Admin ke Dashboard Admin, User ke Katalog). Ini mencegah kebingungan logika (*Looping*).
+* **Logic 2: Auth Guard (Cegah Penyusup)**
+```php
+if (!isset($_SESSION['user_id']) && $page != 'login' && $page != 'register') { ... }
+
+```
+
+
+Jika pengguna **belum login** (tamu) dan mencoba memaksa masuk ke halaman dalam (misal mengetik `/admin_dashboard` di URL), sistem akan memaksa mereka kembali ke halaman Login. Ini adalah proteksi utama sistem Anda.
+
+#### 4. The Dispatcher (Pengatur Lalu Lintas)
+
+```php
+switch ($page) {
+    case 'login': require_once 'views/login.php'; break;
+    case 'admin_dashboard': require_once 'views/admin/dashboard.php'; break;
+    // ... dan seterusnya
+}
+
+```
+
+* Menggunakan struktur **`switch-case`** untuk mencocokkan kata kunci di URL dengan file yang harus dibuka.
+* Contoh: Jika URL meminta `catalog`, maka sistem akan memanggil file `views/user/catalog.php`.
+* **Modularitas**: Dengan cara ini, kode menjadi rapi karena logika tampilan (*View*) dipisahkan ke dalam folder `views/`, dan `index.php` hanya bertugas memanggilnya.
+
+#### 5. Handling Logout & Error 404
+
+* **Logout**: Case `logout` akan menghancurkan sesi (`session_destroy()`) dan mengembalikan user ke halaman login.
+* **Default (404)**: Jika pengguna mengetik alamat yang tidak terdaftar, blok `default` akan bekerja. Sistem cukup pintar untuk mengecek: jika user sudah login, kembalikan ke dashboard; jika belum, suruh login.
+
 
 ---
 
